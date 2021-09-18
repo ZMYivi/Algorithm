@@ -2,9 +2,11 @@
 #include<map>
 #include<string>
 #include<iostream>
+#include<unordered_map>
+#include<set>
 using namespace std;
 
-class Solution {
+class MySolution {
 public:
     map<string, bool> flag;
     bool judge[14][14];
@@ -43,6 +45,74 @@ public:
         return;
     }
 };
+
+struct TireNode {
+    string word;
+    unordered_map<char, TireNode*> children;
+    TireNode() {
+        this->word = "";
+    }
+};
+
+void insertTire(TireNode* root, const string &word) {
+    TireNode* node = root;
+    for(auto c : word) {
+        if(!node->children.count(c)) {
+            node->children[c] = new TireNode();
+        }
+        node = node->children[c];
+    }
+    node->word = word;
+}
+
+class Solution {
+public:
+    int dirs[4][2] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+
+    void dfs(vector<vector<char> >& board, int x, int y, TireNode* root, set<string> &res) {
+        char ch = board[x][y];
+        if(root == nullptr || !root->children.count(ch)) return;
+
+        TireNode* nxt = root->children[ch];
+        if(nxt->word.size() > 0){
+            res.insert(nxt->word);
+        }
+        if(!nxt->children.empty()) {
+            board[x][y] = '#';
+            for(int i=0; i<4; ++i){
+                int tx = x + dirs[i][0];
+                int ty = y + dirs[i][1];
+                if(tx>=0 && tx<board.size() && ty>=0 && ty<board[0].size()) {
+                    dfs(board, tx, ty, nxt, res);
+                }
+            }
+            board[x][y] = ch;
+        }
+
+        if(nxt->children.empty()) {
+            root->children.erase(ch);
+        }
+        return;
+    }
+
+    vector<string> findWords(vector<vector<char> >& board, vector<string>& words) {
+        TireNode* root = new TireNode();
+        set<string> res;
+        for(auto &word : words) {
+            insertTire(root, word);
+        }
+        for(int i=0; i<board.size(); ++i)
+            for(int j=0; j<board[0].size(); ++j) {
+                dfs(board, i, j, root, res);
+            }
+        vector<string> ans;
+        for(auto &i : res) {
+            ans.push_back(i);
+        }
+        return ans;
+    }
+};
+
 
 int main() {
     Solution* p = new Solution();
