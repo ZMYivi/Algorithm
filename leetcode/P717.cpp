@@ -18,3 +18,15 @@ public:
         return true;
     }
 };
+
+int handlers(int a, int b) {
+    return a+b;
+}
+
+void fuck(int (*callback) (int a, int b)) {
+    cout<<"fuck"<<endl;
+}
+
+int main() {
+    fuck(handlers);
+}
